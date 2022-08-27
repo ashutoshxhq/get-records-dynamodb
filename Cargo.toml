@@ -1,5 +1,5 @@
 [package] 
-name = "get_records_dynamodb"
+name = "get-records-dynamodb"
 version = "0.1.0"
 edition = "2021"
 
