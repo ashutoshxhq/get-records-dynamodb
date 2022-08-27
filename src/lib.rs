@@ -89,6 +89,7 @@ pub async fn handler(mut _ctx: RequestContext, _input: Value) -> Result<Value> {
         let mut exp_values: HashMap<String, AttributeValue> = to_item(exp_attr_values)?;
         exp_values.insert(":deleted_at_val".to_string(), AttributeValue::Null(true));
 
+        // TODO: Implement pagination
         let client = Client::new(&sdk_config);
         let req = client
             .query()
