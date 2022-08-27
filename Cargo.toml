@@ -1,0 +1,16 @@
+[package] 
+name = "get_records_dynamodb"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.81"
+egnitely-client = { git="https://github.com/egnitely/egnitely-client-lib.git", version="0.1.0" }
+aws-config = "0.47.0"
+tokio = { version = "1", features = ["full"] }
+aws-sdk-dynamodb = "0.17.0"
+uuid = { version = "1.1.2", features = ["v4"] }
+serde_dynamo = { version = "4.0.5", features = ["aws-sdk-dynamodb+0_17"] }
