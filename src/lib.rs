@@ -10,7 +10,6 @@ struct FunctionContextData {
     pub table_name: String,
     pub primary_key: String,
     pub index_data: HashMap<String, String>,
-    pub token_claims: Value,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,7 +20,7 @@ pub struct FunctionInput {
 }
 
 pub async fn handler(mut _ctx: Context, input: FunctionInput) -> Result<Value, Error> {
-    let context_data = serde_json::from_value::<FunctionContextData>(_ctx.data())?;
+    let config_data = serde_json::from_value::<FunctionContextData>(_ctx.config())?;
     let mut records: Vec<Value> = Vec::new();
     let config = aws_config::from_env().region("ap-south-1").load().await;
 
@@ -33,21 +32,21 @@ pub async fn handler(mut _ctx: Context, input: FunctionInput) -> Result<Value, E
     let mut exp_attr_names: HashMap<String, String> = HashMap::new();
     let mut is_using_index = false;
 
-    if input.filter.contains_key(&context_data.primary_key) {
-        let filter_key_val = format!(":{}_val", context_data.primary_key);
-        if let Some(value) = input.filter.get(&context_data.primary_key) {
+    if input.filter.contains_key(&config_data.primary_key) {
+        let filter_key_val = format!(":{}_val", config_data.primary_key);
+        if let Some(value) = input.filter.get(&config_data.primary_key) {
             exp_attr_values.insert(filter_key_val.clone(), value.clone());
         }
-        let filter_key_name = format!("#{}_key", context_data.primary_key);
-        exp_attr_names.insert(filter_key_name.clone(), context_data.primary_key.clone());
+        let filter_key_name = format!("#{}_key", config_data.primary_key);
+        exp_attr_names.insert(filter_key_name.clone(), config_data.primary_key.clone());
         condition.push_str(&format!(
             "#{}_key = :{}_val",
-            context_data.primary_key, context_data.primary_key
+            config_data.primary_key, config_data.primary_key
         ));
-        hash_key = context_data.primary_key;
+        hash_key = config_data.primary_key;
     } else {
         'outer: for (filter_key, filter_value) in input.filter.clone().into_iter() {
-            for (index_key, index_value) in context_data.index_data.clone().into_iter() {
+            for (index_key, index_value) in config_data.index_data.clone().into_iter() {
                 if filter_key == index_key {
                     let filter_key_val = format!(":{}_val", filter_key);
                     exp_attr_values.insert(filter_key_val.clone(), filter_value);
@@ -94,7 +93,7 @@ pub async fn handler(mut _ctx: Context, input: FunctionInput) -> Result<Value, E
     let client = Client::new(&config);
     let req = client
         .query()
-        .table_name(context_data.table_name)
+        .table_name(config_data.table_name)
         .limit(input.limit)
         .set_exclusive_start_key(None)
         .key_condition_expression(condition)
